@@ -1,134 +1,71 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+import React, {useState, useCallback} from 'react';
+import {StyleSheet, Text, Button, View, Dimensions} from 'react-native';
 
-import React from 'react';
-// import type {Node} from 'react';
-import {
-  // SafeAreaView,
-  // ScrollView,
-  // StatusBar,
-  StyleSheet,
-  Text,
-  Button,
-  useColorScheme,
-  View,
-  Dimensions,
-} from 'react-native';
-
-import {
-  Colors,
-  // DebugInstructions,
-  // Header,
-  // LearnMoreLinks,
-  // ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-// import { StyleSheet, Dimensions, View } from 'react-native';
 import Pdf from 'react-native-pdf';
-
-/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
- * LTI update could not be added via codemod */
-// const Section = ({children, title}) => {
-//   const isDarkMode = useColorScheme() === 'dark';
-//   return (
-//     <View style={styles.sectionContainer}>
-//       <Text
-//         style={[
-//           styles.sectionTitle,
-//           {
-//             color: isDarkMode ? Colors.white : Colors.black,
-//           },
-//         ]}>
-//         {title}
-//       </Text>
-//       <Text
-//         style={[
-//           styles.sectionDescription,
-//           {
-//             color: isDarkMode ? Colors.light : Colors.dark,
-//           },
-//         ]}>
-//         {children}
-//       </Text>
-//     </View>
-//   );
-// };
+import DocumentPicker, {types} from 'react-native-document-picker';
 
 const App = () => {
-  // const isDarkMode = useColorScheme() === 'dark';
+  const [fileResponse, setFileResponse] = useState([]);
 
-  // const backgroundStyle = {
-  //   backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  // };
+  const handleDocumentSelection = useCallback(async () => {
+    try {
+      const response = await DocumentPicker.pick({
+        presentationStyle: 'fullScreen',
+        type: [types.pdf],
+      });
+      console.log(response);
+      setFileResponse(response);
+    } catch (err) {
+      console.warn(err);
+    }
+  }, []);
 
-  const source = {
-    uri: 'http://samples.leanpub.com/thereactnativebook-sample.pdf',
-    cache: true,
-  };
   return (
-    // <SafeAreaView style={backgroundStyle}>
-    //   <StatusBar
-    //     barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-    //     backgroundColor={backgroundStyle.backgroundColor}
-    //   />
-    //   <ScrollView
-    //     contentInsetAdjustmentBehavior="automatic"
-    //     style={backgroundStyle}>
-    //     <Header />
-    //     <View
-    //       style={{
-    //         backgroundColor: isDarkMode ? Colors.black : Colors.white,
-    //       }}>
-    //       <Section title="Step One">
-    //         Edit <Text style={styles.highlight}>App.js</Text> to change this
-    //         screen and then come back to see your edits.
-    //       </Section>
-    //       <Section title="See Your Changes">
-    //         <ReloadInstructions />
-    //       </Section>
-    //       <Section title="Debug">
-    //         <DebugInstructions />
-    //       </Section>
-    //       <Section title="Learn More">
-    //         Read the docs to discover what to do next:
-    //       </Section>
-    //       <LearnMoreLinks />
-    //     </View>
-    //   </ScrollView>
-    // </SafeAreaView>
     <View style={styles.container}>
-      <Button title="open" />
-      <Pdf
-        trustAllCerts={false}
-        source={source}
-        onLoadComplete={(numberOfPages, filePath) => {
-          console.log(`Number of pages: ${numberOfPages}`);
-        }}
-        onPageChanged={(page, numberOfPages) => {
-          console.log(`Current page: ${page}`);
-        }}
-        onError={error => {
-          console.log(error);
-        }}
-        onPressLink={uri => {
-          console.log(`Link pressed: ${uri}`);
-        }}
-        style={styles.pdf}
-        enablePaging={true}
-        horizontal={true}
-      />
+      {fileResponse.map((file, index) => (
+        <View>
+          <Text
+            key={index.toString()}
+            style={styles.uri}
+            numberOfLines={1}
+            ellipsizeMode={'middle'}>
+            {/* {file?.uri} */}
+            {file?.name}
+          </Text>
+          {file && (
+            <Pdf
+              trustAllCerts={false}
+              source={{
+                uri: file?.uri,
+                cache: true,
+              }}
+              onLoadComplete={(numberOfPages, filePath) => {
+                console.log(`Number of pages: ${numberOfPages}`);
+              }}
+              onPageChanged={(page, numberOfPages) => {
+                console.log(`Current page: ${page}`);
+              }}
+              onError={error => {
+                console.log(error);
+              }}
+              onPressLink={uri => {
+                console.log(`Link pressed: ${uri}`);
+              }}
+              style={styles.pdf}
+              enablePaging={true}
+              horizontal={true}
+            />
+          )}
+        </View>
+      ))}
+      <Button title="Select 📑" onPress={handleDocumentSelection} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 0.8,
     justifyContent: 'flex-start',
     alignItems: 'center',
     marginTop: 25,
